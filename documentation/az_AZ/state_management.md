@@ -39,3 +39,78 @@ GetX ile iç içə widget lara da fərdi yanaşıllır. ListView ınızı izləy
 * _Dəyişən HƏQİQƏTƏNDƏN dəyişdikdə o, yenidən qurulur_: GetX-də axın nəzarəti var, yəni 'Aygün' adlı bir data göstərsəniz, müşahidə olunan dəyişəni yenidən 'Aygün' olaraq dəyişdirsəniz, vidcet yenidən qurulmayacaq. Çünki GetX 'Aygün' datası artıq mətndə göstərildiyini bilir və lazımsız yeniləmə edib yüklənməni atyırmayacaq.
 
 Mövcud state menecerlərinin əksəriyyəti (hamısı olmasa da) ekranda yenidən qurulacaq.
+
+## Reactive State Meneceri
+
+Reaktiv proqramlaşdırma bir çox insanı özündən uzaqlaşdıra bilər, çünki onun mürəkkəb olduğu deyilir. GetX reaktiv proqramlaşdırmanı olduqca sadə bir şeyə çevirir:
+
+* StreamController yaratmağa ehtiyacınız olmayacaq.
+* Hər dəyişən üçün StreamBuilder yaratmağa ehtiyacınız olmayacaq.
+* Hər bir state üçün bir class yaratmağa ehtiyacınız olmayacaq.
+* İlkin dəyər üçün get yaratmağa ehtiyacınız olmayacaq.
+
+Get ilə reaktiv proqramlaşdırma setState istifadə etmək qədər asandır.
+
+Təsəvvür edək ki, sizin ad dəyişəniniz var və onu hər dəfə dəyişdirdiyiniz zaman ondan istifadə edən bütün vidjetlərin avtomatik yenilənməsini istəyirsiniz.
+
+Bu sizin say dəyişəninizdir:
+
+``` dart
+var name = 'Alakbar Heydarov';
+```
+
+Onu daima müşahidə etmək üçün sonuna ".obs" əlavə etmək kifayətdir:
+
+``` dart
+var name = 'Alakbar Heydarov'.obs;
+```
+
+Bu qədər sadə !
+
+Bundan sonra biz bu reaktiv-".obs" dəyişənlərinə _Rx_ kimi istinad edə bilərik .   
+
+Başlıq arxa planda nə etdik? Dəyişənin ilkin dəyərini “Alakbar Heydarov” olaraq təyin etdik, “Alakbar Heydarov” istifadə edən bütün vidcetlərə onların indi bu dəyişənə mənsub olduqlarını bildirdik və Rx dəyəri dəyişdikdə onlar aşağıdakı kimi dəyişməli olacaqlar.
+
+Bu, Dartın imkanları sayəsində **GetX-in sehri** budur.
+
+Ancaq bildiyimiz kimi, `Widget` yalnız funksiyanın daxilində olduqda dəyişdirilə bilər, çünki statik siniflərin "avtomatik dəyişmə" etməyə gücü yoxdur.
+
+You will need to create a `StreamBuilder` , subscribe to this variable to listen for changes, and create a "cascade" of nested `StreamBuilder` if you want to change several variables in the same scope, right?
+
+Siz `StreamBuilder` yaratmalı, dəyişikliklərə qulaq asmaq üçün bu dəyişənələrə abunə olmalı və eyni miqyasda bir neçə dəyişəni dəyişdirmək istəyirsinizsə, daxili StreamBuilder-in yaratmalısınız, elə deyilmi?
+
+Yalnız yox, sizə `StreamBuilder` lazım deyil. Amma hansısa çağrılma metodu haqqında yanılmırsınız
+
+Beləliklə, biz müəyyən bir Vidceti dəyişmək istəyəndə adətən çoxlu ümumi məlumatımız our, bu Flutter üsuludur. **GetX** ilə siz bu üzul kodları unuda bilərsiniz.
+
+
+
+`StreamBuilder( … )` ? `initialValue: …` ? `builder: …` ? bunu unudun, sadəcə olaraq dəyişənin daxil olduğu Vidceti `Obx()` Vidcetinin içərisinə yerləşdirin.
+
+``` dart
+Obx (() => Text (controller.name));
+```
+
+_Yadda saxlamaq üçün nə lazımdır? _  Yalnız və yalnız `Obx(() =>` . 
+
+`Obx` olduqca ağıllıdır və yalnız `controller.name` dəyəri dəyişdikdə dəyişəcək.
+
+Əgər `name` : `"Alakbar"` dlrsa və siz onu yenidən `"Alakbar"` a ( `name.value = "Alakbar"` )  dəyişdirirsinizsə, bu, əvvəlki kimi eyni `dəyərdirsə`, ekranda heç nə dəyişməyəcək və `Obx` resurslara qənaət etmək üçün sadəcə etinasızlıq göstərəcək. yeni dəyər və Vidceti yenidən qurmayın. **Bu heyrətamiz deyilmi?**
+
+> Bəs, `Obx` daxilində 5 _Rx_ dəyişənim varsa onda necə?
+
+Onlardan hər hansı biri dəyişdikdə yalnız o zaman yeniləmə baş verəcək. 
+
+> Bir sinifdə 30 dəyişənim varsa, birini yeniləyəndə o , həmin sinifdə olan bütün dəyişənləri yeniləyəcəkmi ?
+
+Xeyr, sadəcə _Rx_ dəyişənini istifadə edən xüsusi Vidgetin yenilənəcəyinə arxayın ola bilərsiniz .
+
+Beləliklə, **GetX** yalnız Rx dəyişəni dəyərini dəyişdikdə ekranı yeniləyir.
+
+``` 
+
+final isOpen = false.obs;
+
+//Bu zaman hec bir dəyər dəyişməyəcək.
+void onButtonTap() => isOpen.value=false;
+```
