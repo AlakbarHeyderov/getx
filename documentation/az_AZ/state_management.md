@@ -69,15 +69,16 @@ Bu qədər sadə !
 
 Bundan sonra biz bu reaktiv-".obs" dəyişənlərinə _Rx_ kimi istinad edə bilərik .   
 
-Başlıq arxa planda nə etdik? Dəyişənin ilkin dəyərini “Alakbar Heydarov” olaraq təyin etdik, “Alakbar Heydarov” istifadə edən bütün vidcetlərə onların indi bu dəyişənə mənsub olduqlarını bildirdik və Rx dəyəri dəyişdikdə onlar aşağıdakı kimi dəyişməli olacaqlar.
+Başlıq arxa planda nə etdik? Dəyişənin ilkin dəyərini “Alakbar Heydarov” olaraq təyin etdik, 
+“Alakbar Heydarov” istifadə edən bütün vidcetlərə onların indi bu dəyişənə mənsub olduqlarını bildirdik və 
+Rx dəyəri dəyişdikdə onlar aşağıdakı kimi dəyişməli olacaqlar.
 
 Bu, Dartın imkanları sayəsində **GetX-in sehri** budur.
 
 Ancaq bildiyimiz kimi, `Widget` yalnız funksiyanın daxilində olduqda dəyişdirilə bilər, çünki statik siniflərin "avtomatik dəyişmə" etməyə gücü yoxdur.
 
-You will need to create a `StreamBuilder` , subscribe to this variable to listen for changes, and create a "cascade" of nested `StreamBuilder` if you want to change several variables in the same scope, right?
-
-Siz `StreamBuilder` yaratmalı, dəyişikliklərə qulaq asmaq üçün bu dəyişənələrə abunə olmalı və eyni miqyasda bir neçə dəyişəni dəyişdirmək istəyirsinizsə, daxili StreamBuilder-in yaratmalısınız, elə deyilmi?
+Siz `StreamBuilder` yaratmalı, dəyişikliklərə qulaq asmaq üçün bu dəyişənələrə abunə olmalı və eyni miqyasda bir neçə dəyişəni dəyişdirmək istəyirsinizsə, 
+daxili StreamBuilder-in yaratmalısınız, elə deyilmi?
 
 Yalnız yox, sizə `StreamBuilder` lazım deyil. Amma hansısa çağrılma metodu haqqında yanılmırsınız
 
@@ -95,7 +96,9 @@ _Yadda saxlamaq üçün nə lazımdır? _  Yalnız və yalnız `Obx(() =>` .
 
 `Obx` olduqca ağıllıdır və yalnız `controller.name` dəyəri dəyişdikdə dəyişəcək.
 
-Əgər `name` : `"Alakbar"` dlrsa və siz onu yenidən `"Alakbar"` a ( `name.value = "Alakbar"` )  dəyişdirirsinizsə, bu, əvvəlki kimi eyni `dəyərdirsə`, ekranda heç nə dəyişməyəcək və `Obx` resurslara qənaət etmək üçün sadəcə etinasızlıq göstərəcək. yeni dəyər və Vidceti yenidən qurmayın. **Bu heyrətamiz deyilmi?**
+Əgər `name` : `"Alakbar"` dlrsa və siz onu yenidən `"Alakbar"` a ( `name.value = "Alakbar"` )  dəyişdirirsinizsə, bu, 
+əvvəlki kimi eyni `dəyərdirsə`, ekranda heç nə dəyişməyəcək və `Obx` resurslara qənaət etmək üçün sadəcə etinasızlıq göstərəcək. 
+Yeni dəyər və Vidceti yenidən qurmayın. **Bu heyrətamiz deyilmi?**
 
 > Bəs, `Obx` daxilində 5 _Rx_ dəyişənim varsa onda necə?
 
@@ -114,3 +117,180 @@ final isOpen = false.obs;
 //Bu zaman hec bir dəyər dəyişməyəcək.
 void onButtonTap() => isOpen.value=false;
 ```
+
+### Üstünlüklər
+
+Güncəllənənlərə nəzarət etmək lazım olanda **GetX()** sizə kömək edir.
+
+Əgər hər hansı bir fəaliyyət yerinə yetirərkən bütün dəyişənlər dəyişdirildiyi üçün `ukal id-lərə` ehtiyacınız yoxdursa, 
+GetBuilder-dən istifadə edin, çünki bu Simple State Updater (setState() kimi) yalnız bir neçə kod sətirindən ibarətdir. 
+Ən az CPU işlədilməsinə nail olmaq, yalnız bir məqsədi yerinə yetirmək (State-nin yenidən qurulması) və 
+minimum mümkün resursları istehlak etmək üçün sadələşdirilmişdir.
+
+**Güclü** State Manager ehtiyacınız varsa, **GetX** ilə düz yolda olduğunuza əmin ola bilməzsiniz.
+
+Bu, dəyişənlərlə işləmir, hər şey __axıcılıq__ ilə gedir, daxildə olan hər şey hər şey `Streams`in altında baş verir.
+
+Həmçinin siz _rxDart_ dan istifadə edə bilərsiniz, 
+çünki hər şey `Streams`-dir, siz hər bir "_Rx_ dəyişəninin" addımlarını dinləyə bilərsiniz, 
+içindəki hər şeyin `Streams` olması sizə bu sadəliyi yaradır.
+
+Bu, sözün əsl mənasında BLoC yanaşmasıdır, MobX-dən daha asandır və kod generatorları və ya əlavə kod yazıları olmadan, 
+siz sadəcə .obs ilə hər şeyi "Müşahidə olunana (Observable)" çevirə bilərsiniz.
+
+### Maksimum performans:
+
+Minimal yenidənqurma üçün ağıllı alqoritmə malik olmaqla yanaşı, 
+**GetX** State-nin dəyişdiyinə əmin olmaq üçün müqayisə edənlərdən istifadə edir.
+
+Tətbiqinizdə hər hansı bir səhvlə qarşılaşsanız və dublikat State dəyişikliyi təqdim etsəniz, 
+**GetX** proqramın qəzaya uğramamasını təmin edəcək.
+
+**GetX** ilə State yalnız `value` dəyişdikdə dəyişir.
+**GetX** ilə MobX-dən istifadə arasındakı əsas fərq budur.
+İki __müşahidə olunanı__ ( __observables__ ) birləşdirərkən, və birini dəyişən zaman, 
+həmin müşahidə olunanın dinləyicisi də dəyişəcək.
+
+**GetX**ilə isə iki dəyişəni birləşdirsəniz, `GetX()` (Observer() ilə oxşar) yalnız vəziyyətin real dəyişikliyini nəzərdə tutduqda  State yenidən quracaq.
+
+### Reaktiv dəyişənin elan edilməsi
+
+Dəyişənləri "observable"ə çevirməyin 3 yolu var.
+
+1 - İlk istifadə **`Rx{Type}`**.
+
+``` dart
+// initial value is recommended, but not mandatory
+final name = RxString('');
+final isLogged = RxBool(false);
+final count = RxInt(0);
+final balance = RxDouble(0.0);
+final items = RxList<String>([]);
+final myMap = RxMap<String, int>({});
+```
+
+2 - İkincisi, **`Rx`** istifadə etmək və Darts Generics istifadə etməkdir. `Rx<Type>`
+
+``` dart
+final name = Rx<String>('');
+final isLogged = Rx<Bool>(false);
+final count = Rx<Int>(0);
+final balance = Rx<Double>(0.0);
+final number = Rx<Num>(0);
+final items = Rx<List<String>>([]);
+final myMap = Rx<Map<String, int>>({});
+
+// Custom classes - it can be any class, literally
+final user = Rx<User>();
+```
+
+3 - Üçüncü, daha praktik, asan və üstünlük verilən yanaşma, sadəcə olaraq `dəyərinizin` sonuna **`.obs`** əlavə edin:
+
+``` dart
+final name = ''.obs;
+final isLogged = false.obs;
+final count = 0.obs;
+final balance = 0.0.obs;
+final number = 0.obs;
+final items = <String>[].obs;
+final myMap = <String, int>{}.obs;
+
+// Custom classes - it can be any class, literally
+final user = User().obs;
+```
+
+##### Reaktiv vəziyyətə sahib olmaq asandır.
+
+Bildiyimiz kimi, _Dart_ indi s_null safety_ yə doğru gedir. 
+Heç bir problemin yaşanmaması üçün bundan sonra həmişə _Rx_ dəyişənlərinizi **ilkin dəyərlə** başlamalısınız.
+
+> Bir dəyişəni _observable_ çevirmək + _ilkin dəyər_ vermək **GetX** də sadə və çox rahatdır.
+
+Dəyişəninizin sonuna  `.obs` əlavə edəcəksiniz və bu, siz onu müşahidə edilə bilən ( observable ) etdiniz 
+və onun istifadə edən zaman `.value` onun _ilkin dəyər_ olacaq.
+
+### Görünüşdəki dəyərlərdən istifadə
+
+``` dart
+// controller file
+final count1 = 0.obs;
+final count2 = 0.obs;
+int get sum => count1.value + count2.value;
+```
+
+``` dart
+// view file
+GetX<Controller>(
+  builder: (controller) {
+    print("count 1 rebuild");
+    return Text('${controller.count1.value}');
+  },
+),
+GetX<Controller>(
+  builder: (controller) {
+    print("count 2 rebuild");
+    return Text('${controller.count2.value}');
+  },
+),
+GetX<Controller>(
+  builder: (controller) {
+    print("count 3 rebuild");
+    return Text('${controller.sum}');
+  },
+),
+```
+
+Əgər `count1.value++` ilə artırsaq, çap olacaq:
+
+* `count 1 rebuild`
+
+* `count 3 rebuild`
+
+çünki `count1` in  `1` dəyəri var, və `1 + 0 = 1` , `sum` öz dəyərini bu çür dəyişəcəkdir.
+
+Əgər `count2.value++` ni dəyişsək , çap olacaq:
+
+* `count 2 rebuild`
+
+* `count 3 rebuild`
+
+Çünki `count2.value` dəyişdi, və nətiçə olaraq `sum` daha `2` dir.
+
+* QEYD: Varsayılan olaraq, eyni dəyər olsa belə, ilk hadisə widget i yenidən quracaq.
+
+ Bu davranış Boolean dəyişənlərinə görə mövcuddur.
+
+Təsəvvür edin ki, siz bunu etdiniz:
+
+``` dart
+var isLogged = false.obs;
+```
+
+Və sonra, istifadəçinin "logged in" əmrinə uyğun olub oladığını yoxladınız _ever_.
+.
+
+``` dart
+@override
+onInit() async {
+  ever(isLogged, fireRoute);
+  isLogged.value = await Preferences.hasToken();
+}
+
+fireRoute(logged) {
+  if (logged) {
+   Get.off(Home());
+  } else {
+   Get.off(Login());
+  }
+}
+```
+
+əgər `hasToken` `false` olsaydı, `isLogged`-də heç bir dəyişiklik olmazdı, ona görə də `ever()` heç vaxt çağırılmazdı. 
+Bu cür davranışın qarşısını almaq üçün _observable_ də ilk dəyişiklik həmişə eyni.
+hətta eyni `.value` ehtiva etsə də .
+
+İstəsəniz, bu davranışı aradan qaldıra bilərsiniz:
+ `isLogged.firstRebuild = false;`
+
+### Yenidən qurmaq üçün şərtlər
+
