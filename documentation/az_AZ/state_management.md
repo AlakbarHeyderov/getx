@@ -294,3 +294,119 @@ hətta eyni `.value` ehtiva etsə də .
 
 ### Yenidən qurmaq üçün şərtlər
 
+Bundan əlavə, Get təkmilləşdirilmiş State nəzarətini təmin edir. Siz bir hadisəni (məsələn, siyahıya obyekt əlavə etmək kimi) müəyyən bir şərtlə şərtləndirə bilərsiniz.
+
+``` dart
+// Birinci parametr: şərt, true və ya false qaytarmalıdır.
+// İkinci parametr: şərt true dirse, tətbiq olunacaq yeni dəyər.
+list.addIf(item < limit, item);
+```
+
+Əlavə kod blokları yazmadan bu qədər sadə :smile:
+
+Flutter defult olaraq açılan rəqəm artırma proqramı yadınızdadırmı? Sizin Controller class ınız belə görünə bilər:
+
+``` dart
+class CountController extends GetxController {
+  final count = 0.obs;
+}
+```
+
+Sadə bir şəkildə:
+
+``` dart
+controller.count.value++
+```
+
+Harada saxlanmasından asılı olmayaraq, UI da sayğac dəyişənini yeniləyə bilərsiniz.
+
+### Harada .obs istifadə edilə bilər
+
+Obs ilə hər şeyi dəyişdirə bilərsiniz. Bunu etməyin iki yolu var::
+
+*  Class dəyərlərinizi obs-ə çevirə bilərsiniz
+
+``` dart
+class RxUser {
+  final name = "Camila".obs;
+  final age = 18.obs;
+}
+```
+
+* və ya bütün sinfi müşahidə edilə bilən hala çevirə bilərsiniz
+
+``` dart
+class User {
+  User({String name, int age});
+  var name;
+  var age;
+}
+
+// tətbiq edərkən::
+final user = User(name: "Camila", age: 18).obs;
+```
+
+### List-lər haqqında qeyd
+
+Siyahılar onun içindəki obyektlər kimi tamamilə müşahidə olunur. Beləliklə, siyahıya dəyər əlavə etsəniz, o, ondan istifadə edən vidjetləri avtomatik olaraq yenidən quracaq.
+
+Siz həmçinin siyahılarla ".value" istifadə etmək lazım deyil, heyrətamiz dart api bizə bunu aradan qaldırmağa imkan verdi.
+
+Təəssüf ki, String və int kimi primitiv tiplər genişləndirilə bilməz, bu da .value istifadəsini məcburi edir, lakin bunlar üçün gets və setters ilə işləsəniz, bu problem olmayacaq.
+
+``` dart
+// Controller in yuxarısında
+final String title = 'User Info:'.obs
+final list = List<User>().obs;
+
+// view in üzərində
+Text(controller.title.value), // String need to have .value in front of it
+ListView.builder (
+  itemCount: controller.list.length // lists don't need it
+)
+```
+Öz class - larınızı müşahidə edilə bilən hala gətirdiyiniz zaman onları yeniləməyin başqa yolu var:
+
+``` dart
+// model file nin üzərində
+// biz hər bir atribut yerinə bütün sinfi müşahidə edilə bilən hala gətirəcəyik
+class User() {
+  User({this.name = '', this.age = 0});
+  String name;
+  int age;
+}
+
+// controller file nin daxilində
+final user = User().obs;
+// istifadəçi dəyişənini yeniləməli olduğunuz zaman:
+user.update( (user) { // this parameter is the class itself that you want to update
+user.name = 'Jonny';
+user.age = 18;
+});
+//istifadəçi dəyişənini yeniləməyin alternativ yolu:
+user(User(name: 'João', age: 35));
+
+// görünüşündə:
+Obx(()=> Text("Name ${user.value.name}: Age: ${user.value.age}"))
+// siz həmçinin .value olmadan model dəyərlərinə daxil ola bilərsiniz:
+user().name; // notice that is the user variable, not the class (variable has lowercase u)
+```
+
+İstəmirsinizsə sets lərlə işləməyə ehtiyac yoxdur. Siz "assign" və "assignAll" api-dən istifadə edə bilərsiniz.
+"assign" api siyahınızı təmizləyəcək və orada başlamaq istədiyiniz bir obyekt əlavə edəcək.
+"assignAll" api mövcud siyahını siləcək və ona daxil etdiyiniz hər hansı təkrarlana bilən obyektləri əlavə edəcək.
+
+### Niyə .value istifadə etməliyəm
+
+Biz sadə dekorasiya və kod generatoru ilə  `String` və `int` üçün “value” dən istifadə tələbini aradan qaldıra bilərik, lakin bu kitabxananın məqsədi xarici asılılıqların qarşısını almaqdır. Biz xarici paketə ehtiyac olmadan sadə, yüngül və effektiv şəkildə əsasları (management of routes, dependencies və states) əhatə edən proqramlaşdırma üçün hazır mühit təklif etmək istəyirik.
+
+Siz pubspec  ə (get) əlavə edərək proqramlaşdırmaya başlaya bilərsiniz. Marşrut idarəetməsindən tutmuş dövlət idarəçiliyinə qədər defolt olaraq daxil edilən bütün həllər rahatlıq, məhsuldarlıq və performans məqsədi daşıyır.
+
+Bu kitabxananın ümumi çəkisi tək bir state manager dən azdır, baxmayaraq ki, bu, tam bir həlldir.
+
+Əgər sizi `.value` narahat edirsə və kod generatorularından istifadəyə öyrəşmisinizsə, MobX əla alternativdir və siz onu Get ilə birlikdə istifadə edə bilərsiniz.
+If you are bothered by `.value` , and like a code generator, MobX is a great alternative, and you can use it in conjunction with Get. For those who want to add a single dependency in pubspec and start programming without worrying about the version of a package being incompatible with another, or if the error of a state update is coming from the state manager or dependency, or still, do not want to worrying about the availability of controllers, whether literally "just programming", get is just perfect.
+
+If you have no problem with the MobX code generator, or have no problem with the BLoC boilerplate, you can simply use Get for routes, and forget that it has state manager. Get SEM and RSM were born out of necessity, my company had a project with more than 90 controllers, and the code generator simply took more than 30 minutes to complete its tasks after a Flutter Clean on a reasonably good machine, if your project it has 5, 10, 15 controllers, any state manager will supply you well. If you have an absurdly large project, and code generator is a problem for you, you have been awarded this solution.
+
+Obviously, if someone wants to contribute to the project and create a code generator, or something similar, I will link in this readme as an alternative, my need is not the need for all devs, but for now I say, there are good solutions that already do that, like MobX.
